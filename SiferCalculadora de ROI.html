@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sifer — Calculadora de ROI</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Poppins:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #07111e; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem; font-family: 'Poppins', sans-serif; }
+  .card { background: #0d1b2e; border-radius: 20px; padding: 2.5rem; width: 100%; max-width: 560px; color: #fff; }
+  .logo { font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 24px; color: #fff; letter-spacing: 1px; }
+  .tagline { font-size: 10px; letter-spacing: 3px; color: #2762EA; text-transform: uppercase; margin-bottom: 2.25rem; font-family: 'Montserrat', sans-serif; margin-top: 2px; }
+  .sec-title { font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase; color: #2762EA; margin-bottom: 1rem; font-family: 'Montserrat', sans-serif; font-weight: 600; }
+  .igrid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 0.75rem; }
+  .ib label { font-size: 12px; color: rgba(255,255,255,0.55); display: block; margin-bottom: 6px; }
+  .ib input { width: 100%; background: rgba(255,255,255,0.06); border: 1px solid rgba(39,98,234,0.25); border-radius: 8px; color: #fff; font-size: 15px; font-family: 'Poppins', sans-serif; padding: 11px 14px; outline: none; transition: border-color 0.2s, background 0.2s; }
+  .ib input:focus { border-color: #2762EA; background: rgba(39,98,234,0.1); }
+  .ib input::placeholder { color: rgba(255,255,255,0.2); }
+  .note { font-size: 11px; color: rgba(255,255,255,0.3); margin-top: 0.5rem; line-height: 1.7; }
+  .note span { color: rgba(39,98,234,0.75); }
+  hr { border: none; border-top: 1px solid rgba(255,255,255,0.07); margin: 1.75rem 0; }
+  .rgrid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+  .rc { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 1rem; }
+  .rc-label { font-size: 10px; color: rgba(255,255,255,0.45); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; font-family: 'Montserrat', sans-serif; }
+  .rc-val { font-size: 20px; font-weight: 700; font-family: 'Montserrat', sans-serif; color: #fff; }
+  .be-card { background: rgba(39,98,234,0.18); border: 1.5px solid #2762EA; border-radius: 12px; padding: 1.4rem 1.5rem; text-align: center; }
+  .be-num { font-size: 32px; font-weight: 800; font-family: 'Montserrat', sans-serif; color: #4d8cff; display: block; margin-bottom: 4px; }
+  .be-text { font-size: 14px; color: rgba(255,255,255,0.75); font-family: 'Poppins', sans-serif; }
+  .empty { text-align: center; padding: 2.5rem 1rem; color: rgba(255,255,255,0.2); font-size: 13px; }
+  @media (max-width: 480px) {
+    .igrid, .rgrid { grid-template-columns: 1fr; }
+    .card { padding: 1.75rem; }
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">Sifer</div>
+  <div class="tagline">Tecnología comercial para inmobiliarias</div>
+
+  <div class="sec-title">Tu negocio hoy — datos mensuales</div>
+  <div class="igrid">
+    <div class="ib">
+      <label>Comisión promedio por venta (USD)</label>
+      <input type="number" id="comision" placeholder="ej. 3000" min="0" oninput="calc()">
+    </div>
+    <div class="ib">
+      <label>Leads que recibís por mes</label>
+      <input type="number" id="leads" placeholder="ej. 40" min="0" oninput="calc()">
+    </div>
+    <div class="ib">
+      <label>Tasa de cierre actual (%)</label>
+      <input type="number" id="cierre" placeholder="ej. 5" min="0" max="100" oninput="calc()">
+    </div>
+    <div class="ib">
+      <label>Inversión aproximada (USD/mes)</label>
+      <input type="number" id="precio" placeholder="Completar en reunión" min="0" oninput="calc()">
+    </div>
+  </div>
+  <p class="note">Proyección basada en <span>+50% más leads</span> con Meta Ads y <span>+30% conversión</span> con atención 24/7</p>
+
+  <hr>
+
+  <div class="sec-title">Proyección total — 12 meses</div>
+  <div id="results"><div class="empty">Completá los datos para ver la proyección</div></div>
+</div>
+
+<script>
+function fmt(n) { return '$' + Math.round(n).toLocaleString('es-AR'); }
+function calc() {
+  var comision = parseFloat(document.getElementById('comision').value) || 0;
+  var leads    = parseFloat(document.getElementById('leads').value)    || 0;
+  var cierre   = parseFloat(document.getElementById('cierre').value)   || 0;
+  var precio   = parseFloat(document.getElementById('precio').value)   || 0;
+  var el = document.getElementById('results');
+  if (!comision || !leads || !cierre) {
+    el.innerHTML = '<div class="empty">Completá los datos para ver la proyección</div>';
+    return;
+  }
+  var tcActual  = cierre / 100;
+  var leadsProj = leads * 1.5;
+  var tcProj    = tcActual * 1.3;
+  var ventas12  = leadsProj * tcProj * 12;
+  var ingreso12 = ventas12 * comision;
+  var leads12   = Math.round(leadsProj * 12);
+  var beVentas  = precio > 0 ? Math.ceil((precio * 12) / comision) : null;
+
+  var beHtml = beVentas !== null
+    ? '<div class="be-card"><span class="be-num">' + beVentas + ' venta' + (beVentas === 1 ? '' : 's') + '</span><span class="be-text">para que el servicio se pague solo en el año</span></div>'
+    : '';
+
+  el.innerHTML =
+    '<div class="rgrid">' +
+      '<div class="rc"><div class="rc-label">Leads totales</div><div class="rc-val">' + leads12.toLocaleString('es-AR') + '</div></div>' +
+      '<div class="rc"><div class="rc-label">Ventas totales</div><div class="rc-val">' + (ventas12 < 1 ? ventas12.toFixed(1) : Math.round(ventas12)) + '</div></div>' +
+      '<div class="rc"><div class="rc-label">Ingreso total</div><div class="rc-val">' + fmt(ingreso12) + '</div></div>' +
+    '</div>' + beHtml;
+}
+</script>
+</body>
+</html>
